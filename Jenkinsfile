@@ -103,35 +103,24 @@ pipeline {
         }
       }
     }
-    
-stage('SonarQube analysis') {
-  agent any
-  steps {
-    echo "Starting SonarQube analysis..."
 
-    withSonarQubeEnv('SonarQube') {
-      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-        script {
-          def scannerHome = tool 'SonarScanner'
+    stage('SonarQube analysis') {
+      agent any
+      steps {
+        echo "Starting SonarQube analysis..."
 
-          if (isUnix()) {
-            sh """
-              ${scannerHome}/bin/sonar-scanner \
-                -Dsonar.host.url=${env.SONAR_HOST_URL} \
-                -Dsonar.token=${env.SONAR_TOKEN}
-            """
-          } else {
+      withSonarQubeEnv('SonarQube') {
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+          script {
+            def scannerHome = tool 'SonarScanner'
             powershell """
               & "${scannerHome}\\bin\\sonar-scanner.bat" `
                 "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
-                "-Dsonar.token=$env:SONAR_TOKEN"
+                "-Dsonar.token=${SONAR_TOKEN}"
             """
           }
         }
       }
-    }
-  }
-}
 
     stage('Quality Gate') {
       agent any
