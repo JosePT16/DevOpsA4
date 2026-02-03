@@ -62,18 +62,14 @@ pipeline {
     }
 
     stage('Run tests (E2E)') {
-      agent any
+      agent { label 'test' }
       steps {
         runCmd("""
           pytest -q
-        """.stripIndent())
-      }
-      post {
-        always {
-          echo "Tests stage finished"
-        }
+        """)
       }
     }
+
 
     stage('Build artifact (ZIP)') {
       agent any
