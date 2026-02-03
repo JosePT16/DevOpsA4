@@ -104,43 +104,34 @@ pipeline {
       }
     }
 
-    stage('SonarQube analysis') {
-      agent any
-      steps {
-        echo "Starting SonarQube analysis..."
+  stage('SonarQube analysis') {
+    agent any
+    steps {
+      echo "Starting SonarQube analysis..."
 
-        /*
-          REQUIREMENTS TO ENABLE THIS STAGE:
-          1) Install plugin: "SonarQube Scanner for Jenkins"
-          2) Configure SonarQube server in Jenkins:
-             Manage Jenkins -> System -> SonarQube servers -> Name: SonarQube
-          3) Add credentials (Secret text) with ID: sonarqube-token
-          4) Ensure sonar-scanner is available (Jenkins tool config or on PATH)
-        */
+      withSonarQubeEnv('SonarQube') {
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+          script {
+            def scannerHome = tool 'SonarScanner'
 
-        withSonarQubeEnv('SonarQube') {
-          withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-            script {
-              if (isUnix()) {
-                runCmd("""
-                  sonar-scanner \
-                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                    -Dsonar.login=${SONAR_TOKEN}
-                """.stripIndent())
-              } else {
-                // Windows PowerShell uses backticks for line continuation
-                runCmd("""
-                  sonar-scanner `
-                    -Dsonar.host.url=${env.SONAR_HOST_URL} `
-                    -Dsonar.login=${env.SONAR_TOKEN}
-                """.stripIndent())
-              }
+            if (isUnix()) {
+              sh """
+                ${scannerHome}/bin/sonar-scanner \
+                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                  -Dsonar.login=${SONAR_TOKEN}
+              """
+            } else {
+              powershell """
+                & "${scannerHome}\\bin\\sonar-scanner.bat" `
+                  -Dsonar.host.url=${env.SONAR_HOST_URL} `
+                  -Dsonar.login=${env.SONAR_TOKEN}
+              """
             }
           }
         }
       }
     }
-
+  }
     stage('Quality Gate') {
       agent any
       steps {
