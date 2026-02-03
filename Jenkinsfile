@@ -14,14 +14,6 @@ def runCmd(String cmd) {
 }
 
 pipeline {
-  /*
-    NOTE ABOUT AGENT LABELS:
-    - If you do NOT have agent labels set up yet, change all:
-        agent { label 'test' } / 'build' / 'deploy'
-      to:
-        agent any
-    - Once you create labels, switch back for grading evidence.
-  */
   agent none
 
   options {
@@ -30,7 +22,6 @@ pipeline {
   }
 
   triggers {
-    // Works when webhook is configured; harmless otherwise
     githubPush()
   }
 
@@ -52,7 +43,7 @@ pipeline {
   stages {
 
     stage('Checkout') {
-      agent any  // change to "agent any" if labels not ready
+      agent any
       steps {
         checkout scm
       }
@@ -109,18 +100,29 @@ pipeline {
       steps {
         echo "Starting SonarQube analysis..."
 
-      withSonarQubeEnv('SonarQube') {
-        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-          script {
-            def scannerHome = tool 'SonarScanner'
-            powershell """
-              & "${scannerHome}\\bin\\sonar-scanner.bat" `
-                "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
-                "-Dsonar.token=${SONAR_TOKEN}"
-            """
+        withSonarQubeEnv('SonarQube') {
+          withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+            script {
+              def scannerHome = tool 'SonarScanner'
+
+              if (isUnix()) {
+                sh """
+                  ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.token=${SONAR_TOKEN}
+                """
+              } else {
+                powershell """
+                  & "${scannerHome}\\bin\\sonar-scanner.bat" `
+                    "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
+                    "-Dsonar.token=${env.SONAR_TOKEN}"
+                """
+              }
+            }
           }
         }
       }
+    }
 
     stage('Quality Gate') {
       agent any
@@ -169,7 +171,9 @@ pipeline {
     stage('Archive artifacts') {
       agent any
       steps {
-        archiveArtifacts artifacts: "artifact-*.zip, performance/summary.json, flask.log, flask.err.log", fingerprint: true, onlyIfSuccessful: false
+        archiveArtifacts artifacts: "artifact-*.zip, performance/summary.json, flask.log, flask.err.log",
+                         fingerprint: true,
+                         onlyIfSuccessful: false
       }
     }
   }
