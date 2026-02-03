@@ -103,38 +103,35 @@ pipeline {
         }
       }
     }
-
+    
 stage('SonarQube analysis') {
-    agent any
-    steps {
-      echo "Starting SonarQube analysis..."
+  agent any
+  steps {
+    echo "Starting SonarQube analysis..."
 
-      withSonarQubeEnv('SonarQube') {
-        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+    withSonarQubeEnv('SonarQube') {
+      withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+        script {
+          def scannerHome = tool 'SonarScanner'
 
-          echo "SONAR_TOKEN length in Jenkins = ${SONAR_TOKEN?.length()}"
-
-          script {
-            def scannerHome = tool 'SonarScanner'
-            if (isUnix()) {
-              sh """
-                ${scannerHome}/bin/sonar-scanner \
-                  -Dsonar.host.url=${SONAR_HOST_URL} \
-                  -Dsonar.token=${SONAR_TOKEN}
-              """
-            } else {
-              powershell """
-                & "${scannerHome}\\bin\\sonar-scanner.bat" `
-                  "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
-                  "-Dsonar.token=${SONAR_TOKEN}" `
-                  "-Dsonar.login=${SONAR_TOKEN}"
-              """
-            }
+          if (isUnix()) {
+            sh """
+              ${scannerHome}/bin/sonar-scanner \
+                -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                -Dsonar.token=${env.SONAR_TOKEN}
+            """
+          } else {
+            powershell """
+              & "${scannerHome}\\bin\\sonar-scanner.bat" `
+                "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+            """
           }
         }
       }
     }
   }
+}
 
     stage('Quality Gate') {
       agent any
