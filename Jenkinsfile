@@ -123,8 +123,8 @@ pipeline {
             } else {
               powershell """
                 & "${scannerHome}\\bin\\sonar-scanner.bat" `
-                  -Dsonar.host.url=${env.SONAR_HOST_URL} `
-                  -Dsonar.login=${env.SONAR_TOKEN}
+                  "-Dsonar.host.url=${env.SONAR_HOST_URL}" `
+                  "-Dsonar.login=${env.SONAR_TOKEN}"
               """
             }
           }
@@ -132,6 +132,7 @@ pipeline {
       }
     }
   }
+
     stage('Quality Gate') {
       agent any
       steps {
