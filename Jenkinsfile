@@ -52,14 +52,14 @@ pipeline {
   stages {
 
     stage('Checkout') {
-      agent { label 'test' }  // change to "agent any" if labels not ready
+      agent any  // change to "agent any" if labels not ready
       steps {
         checkout scm
       }
     }
 
     stage('Install dependencies') {
-      agent { label 'test' }
+      agent any
       steps {
         runCmd("""
           python --version
@@ -71,7 +71,7 @@ pipeline {
     }
 
     stage('Run tests (E2E)') {
-      agent { label 'test' }
+      agent any
       steps {
         runCmd("""
           pytest -q
@@ -85,7 +85,7 @@ pipeline {
     }
 
     stage('Build artifact (ZIP)') {
-      agent { label 'build' }
+      agent any
       steps {
         script {
           if (isUnix()) {
@@ -105,7 +105,7 @@ pipeline {
     }
 
     stage('SonarQube analysis') {
-      agent { label 'test' }
+      agent any
       steps {
         echo "Starting SonarQube analysis..."
 
@@ -142,7 +142,7 @@ pipeline {
     }
 
     stage('Quality Gate') {
-      agent { label 'test' }
+      agent any
       steps {
         echo "Waiting for SonarQube Quality Gate..."
         timeout(time: 5, unit: 'MINUTES') {
@@ -153,7 +153,7 @@ pipeline {
 
     stage('Deploy to staging (local run)') {
       when { expression { return isMainBranch() } }
-      agent { label 'deploy' }
+      agent any
       steps {
         echo "Deploying to staging (local run)..."
         script {
@@ -176,7 +176,7 @@ pipeline {
 
     stage('Performance test (k6)') {
       when { expression { return isMainBranch() } }
-      agent { label 'test' }
+      agent any
       steps {
         echo "Running k6 performance test..."
         runCmd("""
@@ -186,7 +186,7 @@ pipeline {
     }
 
     stage('Archive artifacts') {
-      agent { label 'build' }
+      agent any
       steps {
         archiveArtifacts artifacts: "artifact-*.zip, performance/summary.json, flask.log, flask.err.log", fingerprint: true, onlyIfSuccessful: false
       }
