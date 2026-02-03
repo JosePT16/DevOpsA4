@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS dishes (
+    id INTEGER PRIMARY KEY,
+    dish TEXT NOT NULL,
+    country TEXT NOT NULL
+);
+

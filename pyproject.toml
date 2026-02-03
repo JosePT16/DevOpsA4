@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devopsa3"
+version = "0.1.0"
+description = "Simple Flask app for DevOps Assignment 4"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["Flask==3.0.0"]
+
+[tool.setuptools]
+packages = ["app"]
