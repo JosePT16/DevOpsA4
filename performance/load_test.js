@@ -2,13 +2,12 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 
 export const options = {
-  // Keep it small for class + local laptop
-  vus: 10,              // virtual users
-  duration: "15s",      // how long to run
+  vus: 10,              
+  duration: "15s",      
 
   thresholds: {
-    http_req_failed: ["rate<0.01"],     // < 1% requests can fail
-    http_req_duration: ["p(95)<500"],   // 95% of requests < 500ms
+    http_req_failed: ["rate<0.01"],    
+    http_req_duration: ["p(95)<500"],  
   },
 };
 
