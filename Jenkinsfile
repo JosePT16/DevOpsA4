@@ -198,16 +198,30 @@ pipeline {
       }
     }
   }
-
   post {
-    success {
-      echo "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
-    }
-    failure {
-      echo "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
-    }
-    always {
-      echo "Pipeline finished."
+      success {
+        echo "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
+        slackSend(
+          channel: "${env.SLACK_CHANNEL}",
+          message: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})\n${env.BUILD_URL}"
+        )
+      }
+      failure {
+        echo "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
+        slackSend(
+          channel: "${env.SLACK_CHANNEL}",
+          message: "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})\n${env.BUILD_URL}"
+        )
+      }
+      aborted {
+        slackSend(
+          channel: "${env.SLACK_CHANNEL}",
+          message: "ABORTED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})\n${env.BUILD_URL}"
+        )
+      }
+      always {
+        echo "Pipeline finished."
+
     }
   }
 }
