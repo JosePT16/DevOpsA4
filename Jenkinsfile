@@ -206,7 +206,7 @@ pipeline {
     failure {
       echo "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
     }
-    always {g
+    always {
       echo "Pipeline finished."
     }
   }
