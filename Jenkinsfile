@@ -3,14 +3,13 @@
 // This pipeline demonstrates CI/CD with agents, branch logic, artifacts,
 // SonarQube analysis, performance testing, and staging deployment.
 
-// ---------------- Helper functions ----------------
 
-// QUESTION 3: Branch-specific pipeline logic helper
+
+// QUESTION 3: Jenkins file showing branch specific pipeline logic
 def isMainBranch() {
   return env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master'
 }
 
-// Cross-platform command runner (Windows / Linux agents)
 def runCmd(String cmd) {
   if (isUnix()) {
     sh cmd
@@ -19,12 +18,10 @@ def runCmd(String cmd) {
   }
 }
 
-// --------------------------------------------------
 
 pipeline {
 
-  // QUESTION 2: Jenkins Agent Configuration
-  // agent none allows stages to explicitly select different agents
+  
   agent none
 
   options {
@@ -32,8 +29,7 @@ pipeline {
     disableConcurrentBuilds()
   }
 
-  // QUESTION 3: Source Control Integration
-  // GitHub webhook trigger
+  // QUESTION 3:  GitHub webhook trigger
   triggers {
     githubPush()
   }
@@ -47,11 +43,11 @@ pipeline {
     // Artifact versioning using build number
     APP_VERSION = "1.0.${BUILD_NUMBER}"
 
-    // QUESTION 5: Code Quality Analysis
+    
     // Local SonarQube server
     SONAR_HOST_URL = "http://localhost:9000"
 
-    // QUESTION 8: Performance Testing
+    //Performance Testing
     BASE_URL = "http://127.0.0.1:5000"
   }
 
@@ -77,8 +73,7 @@ pipeline {
     }
 
     stage('Run tests (E2E)') {
-      // QUESTION 2: Jenkins Agent Configuration
-      // This stage runs on a dedicated agent labeled "test"
+      
       agent { label 'test' }
       steps {
         runCmd("""
@@ -113,7 +108,7 @@ pipeline {
     }
 
     stage('SonarQube analysis') {
-      // QUESTION 5: Code Quality Analysis
+      
       // Static code analysis using SonarQube
       agent any
       steps {
@@ -144,7 +139,7 @@ pipeline {
     }
 
     stage('Quality Gate') {
-      // QUESTION 5: Quality Gate enforcement
+      
       // Pipeline will fail if quality gate is not met
       agent any
       steps {
@@ -156,8 +151,7 @@ pipeline {
     }
 
     stage('Deploy to staging (local run)') {
-      // QUESTION 3: Branch-specific pipeline behavior
-      // Deployment only happens on main/master branch
+      // QUESTION 3: Deployment only happens on main/master branch
       when { expression { return isMainBranch() } }
       agent any
       steps {
@@ -184,8 +178,7 @@ pipeline {
     }
 
     stage('Performance test (k6)') {
-      // QUESTION 8: Performance Testing
-      // Load testing using k6, executed only on main branch
+      // Performance Test with k6
       when { expression { return isMainBranch() } }
       agent any
       steps {
@@ -197,7 +190,6 @@ pipeline {
     }
 
     stage('Archive artifacts') {
-      // QUESTION 4 & 8: Artifact storage
       agent any
       steps {
         archiveArtifacts artifacts: "artifact-*.zip, performance/summary.json, flask.log, flask.err.log",
@@ -214,7 +206,7 @@ pipeline {
     failure {
       echo "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${env.BRANCH_NAME})"
     }
-    always {
+    always {g
       echo "Pipeline finished."
     }
   }

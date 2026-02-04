@@ -4,7 +4,7 @@ def test_user_journey_add_list_delete_dish(client):
     assert resp.status_code == 200
     data = resp.get_json()
     assert isinstance(data, list)
-    assert len(data) >= 3  # from seed.sql
+    assert len(data) >= 3  
 
     # 2) add a new dish
     new_dish = {"id": 999, "dish": "Pizza", "country": "Italy"}
@@ -27,7 +27,7 @@ def test_user_journey_add_list_delete_dish(client):
     assert deleted["status"] == "DELETED"
     assert deleted["id"] == 999
 
-    # 5) verify it’s gone
+    # 5) verify it is gone
     resp = client.get("/dishes")
     assert resp.status_code == 200
     dishes = resp.get_json()
